@@ -100,12 +100,11 @@ def get_active_subscriptions_on_day(
     plans_df: pd.DataFrame,
 ) -> pd.DataFrame:
     """
-    For a given day (evaluated at 23:59:59), return a DataFrame of
+    For a given day (EOD at 23:59:59), return a DataFrame of
     active users with columns: user_id, plan_id, locked_price.
 
     A user is active if:
-      - They have at least one event up to day_end, AND
-      - Their most recent event (by timestamp) is a 'sub'
+      - They have at least one event up to day_end, AND their most recent event (by timestamp) is a 'sub'
     """
     # Only consider events that have arrived by end of this day
     day_events = events_df[events_df["event_timestamp"] <= day_end].copy()
@@ -128,9 +127,9 @@ def get_active_subscriptions_on_day(
     if active.empty:
         return pd.DataFrame(columns=["user_id", "plan_id", "locked_price"])
 
-    # For each active user, find their ORIGINAL subscription timestamp
+    # For each active user, find their original subscription timestamp
     # (the earliest 'sub' event) to lock in their grandfathered price.
-    # We look within all events up to day_end, not just their latest event.
+    # We are looking at all events up to day_end, not just their latest event.
     first_subs = (
         day_events[day_events["event_type"] == "sub"]
         .sort_values("event_timestamp")
@@ -153,7 +152,7 @@ def get_active_subscriptions_on_day(
     return active[["user_id", "plan_id", "locked_price"]]
 
 # ---------------------------------------------------------------------------
-# 5. Build the full June 2023 DRR report
+# 5. Load - Build the full report - June 2023 default report
 # ---------------------------------------------------------------------------
 
 def build_drr_report(
@@ -191,6 +190,8 @@ def build_drr_report(
 
 def main():
 
+# Use argparse to allow dynamic file paths and date range
+
     parser = argparse.ArgumentParser(description="Daily Revenue Reconciler")
     parser.add_argument("--events", default="user_events.csv",  help="Path to events CSV")
     parser.add_argument("--plans",  default="plans.csv",        help="Path to plans CSV")
@@ -219,9 +220,9 @@ def main():
     pd.set_option("display.float_format", "{:.2f}".format)
     print(report.to_string(index=False))
 
-    # Export
-    report.to_csv("Revenue_report_june_2023.csv", index=False)
-    print("\nReport saved to Revenue_report_june_2023.csv")
+    # Load the report to a CSV file
+    report.to_csv(f"Revenue_report_{start_date.strftime('%Y-%m')}.csv", index=False)
+    print(f"\nReport saved to Revenue_report_{start_date.strftime('%Y-%m')}.csv")
 
 if __name__ == "__main__":
     main()
