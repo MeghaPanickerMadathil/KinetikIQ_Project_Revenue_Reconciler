@@ -25,7 +25,7 @@ Events are always sorted by `event_timestamp`, not by the order they appear in t
 # Grandfathered Pricing
 A user's price is locked in at the plan price that was in effect **at the exact second they first subscribed**. Price increases after that date do not affect existing subscribers.
 
-# Idempotency
+# Deduplication
 If an `event_id` appears more than once in the source data (due to network retries), only the first occurrence is counted. Duplicates are dropped before any processing.
 
 Raw CSVs in the folder
